@@ -7,11 +7,14 @@ public class Sword : MonoBehaviour
     [SerializeField] private GameObject slashPrefab;
     [SerializeField] private Transform slashAnimationPoint;
     [SerializeField] private Transform weaponCollider;
+    [SerializeField] private float swordAttackCD = 0.5f;
 
     private PlayerControls playerControls;
     private Animator anim;
     private PlayerController playerController;
     private ActiveWeapon activeWeapon;
+    private bool attackButtonDown = false;
+    private bool isAttacking = false;
 
     private GameObject slashAnim; 
 
@@ -30,26 +33,51 @@ public class Sword : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        playerControls.Combat.Attack.started += _ => Attack();
+        weaponCollider.gameObject.SetActive(false);
+        playerControls.Combat.Attack.started += _ => StartAttacking();
+        playerControls.Combat.Attack.canceled += _ => StopAttacking();
     }
 
     private void Update()
     {
-        MouseFollowWithOffset();    
+        MouseFollowWithOffset();
+        Attack();
+    }
+
+    private void StartAttacking()
+    {
+        attackButtonDown = true;
+    }
+
+    private void StopAttacking()
+    {
+        attackButtonDown = false;
     }
 
     private void Attack()
     {
-        anim.SetTrigger("Attack");
-        weaponCollider.gameObject.SetActive(true);
+        if (attackButtonDown && !isAttacking)
+        {
+            isAttacking = true;
+            anim.SetTrigger("Attack");
+            weaponCollider.gameObject.SetActive(true);
 
-        slashAnim = Instantiate(slashPrefab, slashAnimationPoint.position, Quaternion.identity);
-        slashAnim.transform.parent = this.transform.parent;
+            slashAnim = Instantiate(slashPrefab, slashAnimationPoint.position, Quaternion.identity);
+            slashAnim.transform.parent = this.transform.parent;
+            StartCoroutine(AttackCDRoutine());
+        }
+        
+    }
+
+    private IEnumerator AttackCDRoutine()
+    {
+        yield return new WaitForSeconds(swordAttackCD);
+        isAttacking = false;
     }
 
     public void DoneAttack()//Dung trong animation Sword
     {
-        weaponCollider.gameObject.SetActive(false);
+        weaponCollider.gameObject.SetActive(false);//Ẩn collider của weapon
     }
 
     public void SwingUpFlipAnim()//Dùng trong Animation Slash

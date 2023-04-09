@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -28,13 +28,13 @@ public class EnemyAI : MonoBehaviour
         while(state == State.Roaming)
         {
             Vector2 roamPosition = GetRoamingPosition();
-            enemyPathFinding.MoveTo(roamPosition);
+            enemyPathFinding.MoveTo(roamPosition);//di chuyển đến vị trí ngẫu nhiên đã chọn
             yield return new WaitForSeconds(2f);
 
         }
     }
 
-    private Vector2 GetRoamingPosition()
+    private Vector2 GetRoamingPosition()//Lấy vị trí ngẫu nhiên
     {
         return new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f)).normalized;
     }
