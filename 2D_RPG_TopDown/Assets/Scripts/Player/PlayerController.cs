@@ -23,7 +23,7 @@ public class PlayerController : Singleton<PlayerController>
     
     protected override void Awake()
     {
-        base.Awake();
+        base.Awake();//Cần để hoạt động
         playerControls = new PlayerControls();
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
