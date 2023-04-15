@@ -16,6 +16,8 @@ public class ActiveInventory : MonoBehaviour
     private void Start()
     {
         playerControls.Inventory.KeyBoard.performed += ctx => ToggleActiveSlot((int)ctx.ReadValue<float>());
+
+        ToggleActiveHighlight(0);//Khi bắt đầu sẽ cầm vũ khí đầu tiên
     }
 
     private void OnEnable()
@@ -44,6 +46,25 @@ public class ActiveInventory : MonoBehaviour
 
     private void ChangeActiveWeapon()
     {
-        Debug.Log(transform.GetChild(activeSlotIndexNum).GetComponent<InventorySlot>().GetWeaponInfo().weaponPrefab.name);
+        if(ActiveWeapon.Instance.CurrentActiveWeapon != null)//Nếu đang có vũ khí
+        {
+            Destroy(ActiveWeapon.Instance.CurrentActiveWeapon.gameObject);//Hủy vũ khí đó
+        }
+
+        //Nếu nhấn slot không có vũ khí(tức ô rỗng) thì return thoát khỏi chức năng này
+        if (!transform.GetChild(activeSlotIndexNum).GetComponentInChildren<InventorySlot>())
+        {
+            ActiveWeapon.Instance.WeaponNull();
+            return;
+        }
+
+        //Debug.Log(transform.GetChild(activeSlotIndexNum).GetComponent<InventorySlot>().GetWeaponInfo().weaponPrefab.name);
+        GameObject weapomToSpawn = transform.GetChild(activeSlotIndexNum).GetComponentInChildren<InventorySlot>().GetWeaponInfo().weaponPrefab;//Lấy ra Prefab vũ khí
+
+        GameObject newWeapon = Instantiate(weapomToSpawn, ActiveWeapon.Instance.transform.position, Quaternion.identity);//Tạo vũ khí ở vị trí ActiveWeapon
+        ActiveWeapon.Instance.transform.rotation = Quaternion.Euler(0, 0, 0);
+        newWeapon.transform.parent = ActiveWeapon.Instance.transform;//Tạo vũ khí bên trong ActiveWeapon
+
+        ActiveWeapon.Instance.NewWeapon(newWeapon.GetComponent<MonoBehaviour>());
     }
 }
