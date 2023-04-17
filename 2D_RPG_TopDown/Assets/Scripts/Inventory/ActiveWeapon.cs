@@ -7,6 +7,8 @@ public class ActiveWeapon : Singleton<ActiveWeapon>
     public MonoBehaviour CurrentActiveWeapon { get; private set; }
     private PlayerControls playerControls;
 
+    private float timeBetweenAttacks;
+
     private bool attackButtonDown = false;
     private bool isAttacking = false;
 
@@ -25,6 +27,8 @@ public class ActiveWeapon : Singleton<ActiveWeapon>
     {
         playerControls.Combat.Attack.started += _ => StartAttacking();
         playerControls.Combat.Attack.canceled += _ => StopAttacking();
+
+        AttackCoolDown();
     }
 
     private void Update()
@@ -32,19 +36,29 @@ public class ActiveWeapon : Singleton<ActiveWeapon>
         Attack();
     }
 
-    public void NewWeapon(MonoBehaviour newWeapon)
+    public void NewWeapon(MonoBehaviour newWeapon)//Dùng trong hàm ChangeActiveWeapon lớp ActiveInventory
     {
         CurrentActiveWeapon = newWeapon;
+        AttackCoolDown();
+        timeBetweenAttacks = (CurrentActiveWeapon as IWeapon).GetWeaponInfo().weaponCoolDown;
+    }
+
+    private void AttackCoolDown()
+    {
+        isAttacking = true;
+        StopAllCoroutines();//Dừng tất cả các Coroutine để tránh lỗi đổi vũ khí không reset thời gian
+        StartCoroutine(TimeBetweenAttacksRoutine());
+    }
+
+    private IEnumerator TimeBetweenAttacksRoutine()
+    {
+        yield return new WaitForSeconds(timeBetweenAttacks);
+        isAttacking = false;
     }
 
     public void WeaponNull()
     {
         CurrentActiveWeapon = null;
-    }
-
-    public void ToggleIsAttacking(bool value)
-    {
-        isAttacking = value;
     }
 
     private void StartAttacking()
@@ -61,7 +75,7 @@ public class ActiveWeapon : Singleton<ActiveWeapon>
     {
         if(attackButtonDown && !isAttacking)
         {
-            isAttacking = true;
+            AttackCoolDown();
             (CurrentActiveWeapon as IWeapon).Attack();//Thực hiện hàm Attack trong IWeapon
         }
         

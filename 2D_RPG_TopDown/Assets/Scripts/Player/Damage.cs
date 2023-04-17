@@ -4,7 +4,13 @@ using UnityEngine;
 
 public class Damage : MonoBehaviour
 {
-    [SerializeField] private int damageAmount = 1;//Sát thương
+    private int damageAmount;//Sát thương
+
+    private void Start()
+    {
+        MonoBehaviour currenActiveWeapon = ActiveWeapon.Instance.CurrentActiveWeapon;
+        damageAmount = (currenActiveWeapon as IWeapon).GetWeaponInfo().weaponDame;
+    }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
