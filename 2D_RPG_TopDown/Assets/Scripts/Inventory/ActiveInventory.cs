@@ -51,17 +51,23 @@ public class ActiveInventory : MonoBehaviour
             Destroy(ActiveWeapon.Instance.CurrentActiveWeapon.gameObject);//Hủy vũ khí đó
         }
 
+        Transform childTransform = transform.GetChild(activeSlotIndexNum);//Lấy vị trí tương ứng với SlotIndex
+        InventorySlot inventoryslot = childTransform.GetComponentInChildren<InventorySlot>();
+        WeaponInfo weaponInfo = inventoryslot.GetWeaponInfo();
+        GameObject weaponToSpawn = weaponInfo.weaponPrefab;
+
         //Nếu nhấn slot không có vũ khí(tức ô rỗng) thì return thoát khỏi chức năng này
-        if (!transform.GetChild(activeSlotIndexNum).GetComponentInChildren<InventorySlot>())
+        if (weaponInfo ==null)
         {
             ActiveWeapon.Instance.WeaponNull();
             return;
         }
 
         //Debug.Log(transform.GetChild(activeSlotIndexNum).GetComponent<InventorySlot>().GetWeaponInfo().weaponPrefab.name);
-        GameObject weapomToSpawn = transform.GetChild(activeSlotIndexNum).GetComponentInChildren<InventorySlot>().GetWeaponInfo().weaponPrefab;//Lấy ra Prefab vũ khí
+        //GameObject weaponToSpawn = transform.GetChild(activeSlotIndexNum).GetComponentInChildren<InventorySlot>().GetWeaponInfo().weaponPrefab;//Lấy ra Prefab vũ khí
 
-        GameObject newWeapon = Instantiate(weapomToSpawn, ActiveWeapon.Instance.transform.position, Quaternion.identity);//Tạo vũ khí ở vị trí ActiveWeapon
+
+        GameObject newWeapon = Instantiate(weaponToSpawn, ActiveWeapon.Instance.transform.position, Quaternion.identity);//Tạo vũ khí ở vị trí ActiveWeapon
         ActiveWeapon.Instance.transform.rotation = Quaternion.Euler(0, 0, 0);
         newWeapon.transform.parent = ActiveWeapon.Instance.transform;//Tạo vũ khí bên trong ActiveWeapon
 

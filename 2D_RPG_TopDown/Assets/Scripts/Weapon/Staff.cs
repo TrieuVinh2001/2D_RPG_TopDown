@@ -9,7 +9,7 @@ public class Staff : MonoBehaviour,IWeapon
     [SerializeField] private Transform magicLaserSpawnPoint;
 
     private Animator anim;
-    readonly int AttackHash = Animator.StringToHash("Attack");//Dùng để đỡ tốn tài nguyên, giúp tăng hiệu suất
+    readonly int ATTACK_HASH = Animator.StringToHash("Attack");//Dùng để đỡ tốn tài nguyên, giúp tăng hiệu suất
 
     private void Awake()
     {
@@ -21,12 +21,13 @@ public class Staff : MonoBehaviour,IWeapon
     }
     public void Attack()
     {
-        anim.SetTrigger(AttackHash);//đỡ tốn tài nguyên hơn
+        anim.SetTrigger(ATTACK_HASH);//đỡ tốn tài nguyên hơn
     }
 
     public void SpawnStaffProjectileAnimEvent()
     {
         GameObject newLaser = Instantiate(magicLaser, magicLaserSpawnPoint.position, Quaternion.identity);
+        newLaser.GetComponent<MagicLaser>().UpdateLaserRange(weaponInfo.weaponRange);//Khi tạo mới laser thì sẽ thực lấy weaponRange từ scriptObject gán vào MagicLaser
     }
 
     public WeaponInfo GetWeaponInfo()
