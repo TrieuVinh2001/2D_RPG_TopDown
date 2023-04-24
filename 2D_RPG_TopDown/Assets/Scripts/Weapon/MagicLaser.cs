@@ -6,7 +6,7 @@ public class MagicLaser : MonoBehaviour
 {
     [SerializeField] private float laserGrowTime=0.2f;//thời gian kéo dài laser
     private float laserRange;
-    private bool isGrow;
+    private bool isGrow = true;
 
     private SpriteRenderer spriteRenderer;
     private CapsuleCollider2D capsuleCollider2D;
@@ -39,9 +39,10 @@ public class MagicLaser : MonoBehaviour
     private IEnumerator IncreaseLaserLenghtRoutine()//Tăng độ dài laser
     {
         float timePassed = 0f;
-
-        while (spriteRenderer.size.x < laserRange &&isGrow)
+        Debug.Log("k");
+        while (spriteRenderer.size.x < laserRange && isGrow)
         {
+            Debug.Log("f");
             timePassed += Time.deltaTime;
             float linearT = timePassed / laserGrowTime;
 
