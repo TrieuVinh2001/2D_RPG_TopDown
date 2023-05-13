@@ -12,8 +12,17 @@ public class Shooter : MonoBehaviour, IEnemy
     [SerializeField] private float startingDistance = 0.1f;
     [SerializeField] private float timeBetweenBursts;//Thời gian giữa các lần bắn liên tục
     [SerializeField] private float restTime = 1f;//Thời gian nghỉ giữa các đợt bắn
+    [SerializeField] private bool stagger;//Lảo đảo (tách)
+    [SerializeField] private bool oscillate;//Dao động
 
     private bool isShooting = true;
+
+    private void OnValidate()//Dùng trong editer để ràng buộc giá trị khi nhập
+    {
+        if (oscillate) { stagger = true; }//Nếu tích oscillate thì stagger cũng được tích
+        if(!oscillate) { stagger = false; }
+        if(projectilesPerBurst<1) { projectilesPerBurst = 1; }
+    }
 
     public void Attack()
     {
@@ -27,11 +36,33 @@ public class Shooter : MonoBehaviour, IEnemy
     {
         isShooting = false;
 
-        float startAngle, currentAngle, angleStep;
-        TargetConeOfInfluence(out startAngle, out currentAngle, out angleStep);//out được dùng chung không phải xác định nó là float string hay các kiểu khác
+        float timeBetweenProjectiles = 0f;
+        float startAngle, currentAngle, angleStep, endAngle;
+        TargetConeOfInfluence(out startAngle, out currentAngle, out angleStep, out endAngle);//out được dùng chung không phải xác định nó là float string hay các kiểu khác
+
+        if (stagger)
+        {
+            timeBetweenProjectiles = timeBetweenBursts / projectilesPerBurst;
+        }
 
         for (int i = 0; i < burstCount; i++)//Số lần bắn liên tục
         {
+            if (!oscillate)
+            {
+                TargetConeOfInfluence(out startAngle, out currentAngle, out angleStep, out endAngle);
+            }
+            if(oscillate && i%2 != 1)
+            {//Xác định lại vị trí player
+                TargetConeOfInfluence(out startAngle, out currentAngle, out angleStep, out endAngle);
+            }
+            else if(oscillate)
+            {
+                currentAngle = endAngle;
+                endAngle = startAngle;
+                startAngle = currentAngle;
+                angleStep *= -1;
+            }
+
             for (int j = 0; j < projectilesPerBurst; j++)//Số đạn bắn ra cùng lúc trong 1 lần bắn
             {
                 Vector2 pos = FindBulletSpawnPos(currentAngle);//Vị trí đạn tại góc hiện tại
@@ -45,12 +76,19 @@ public class Shooter : MonoBehaviour, IEnemy
                 }
 
                 currentAngle += angleStep;//Tăng góc hiện tại từ góc đầu đến góc cuối
+
+                if (stagger)
+                {
+                    yield return new WaitForSeconds(timeBetweenProjectiles);
+                }
             }
 
             currentAngle = startAngle;//Đặt góc hiện tại về góc đầu
 
-            yield return new WaitForSeconds(timeBetweenBursts);
-            TargetConeOfInfluence(out startAngle, out currentAngle, out angleStep);
+            if (!stagger)
+            {
+                yield return new WaitForSeconds(timeBetweenBursts);
+            } 
         }
 
         yield return new WaitForSeconds(restTime);
@@ -58,13 +96,13 @@ public class Shooter : MonoBehaviour, IEnemy
         isShooting = true;
     }
 
-    private void TargetConeOfInfluence(out float startAngle, out float currentAngle, out float angleStep)
+    private void TargetConeOfInfluence(out float startAngle, out float currentAngle, out float angleStep, out float endAngle)
     {
         //Vector đường thẳng từ quái đến player
         Vector2 targetDirection = PlayerController.Instance.transform.position - transform.position;
         float targetAngle = Mathf.Atan2(targetDirection.y, targetDirection.x) * Mathf.Rad2Deg;//Góc hướng tới player
         startAngle = targetAngle;
-        float endAngle = targetAngle;//Góc kết thúc
+        endAngle = targetAngle;//Góc kết thúc
         currentAngle = targetAngle;
         float halfAngleSpread = 0f;//Nửa góc mở rộng(nửa góc hình quạt)
         angleStep = 0f;
