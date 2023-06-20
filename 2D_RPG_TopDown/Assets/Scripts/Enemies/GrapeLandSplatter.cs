@@ -4,15 +4,28 @@ using UnityEngine;
 
 public class GrapeLandSplatter : MonoBehaviour
 {
+    private SpriteFade spriteFade;
+
+    private void Awake()
+    {
+        spriteFade = GetComponent<SpriteFade>();
+    }
+
     // Start is called before the first frame update
     void Start()
     {
-        
+        StartCoroutine(spriteFade.SlowFadeRoutine());
+        Invoke("DisableCollider", 0.2f);
     }
 
-    // Update is called once per frame
-    void Update()
+    private void OnTriggerEnter2D(Collider2D collision)
     {
-        
+        PlayerHealth playerHealth = collision.gameObject.GetComponent<PlayerHealth>();
+        playerHealth?.TakeDamage(1, transform);
+    }
+
+    private void DisableCollider()
+    {
+        GetComponent<CapsuleCollider2D>().enabled = false;
     }
 }
